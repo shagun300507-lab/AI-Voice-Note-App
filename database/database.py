@@ -1,7 +1,14 @@
 import sqlite3
+import os
 from datetime import datetime
 
-DATABASE = "database/tasks.db"
+if os.environ.get("VERCEL"):
+    DATABASE = "/tmp/tasks.db"
+else:
+    DATABASE = os.path.join(
+        os.path.dirname(__file__),
+        "tasks.db"
+    )
 
 
 def get_connection():
@@ -10,6 +17,7 @@ def get_connection():
 
 def init_db():
     connection = get_connection()
+
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -37,6 +45,8 @@ def save_task(
     category,
     suggestion
 ):
+    init_db()
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -67,6 +77,8 @@ def save_task(
 
 
 def get_tasks():
+    init_db()
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -87,4 +99,4 @@ def get_tasks():
 
     connection.close()
 
-    return tasks
+    return tasks 
