@@ -139,3 +139,225 @@ Initial project setup
 ```
 
 **Don't create another commit just for the same README changes**—this is enough for Part 2.
+# 🎙️ AI Voice Note — Part 3
+
+## 🚀 Part 3: AI Integration, Database & Deployment
+
+In Part 3, the AI Voice Note project was upgraded from a basic voice-to-text application into a complete **AI-powered task management system**.
+
+The application can now take a user's spoken task, analyze it, organize the information, save it, and display the generated task details.
+
+---
+
+## 🤖 1. Gemini AI Integration
+
+Google Gemini was integrated into the application to analyze voice-note text.
+
+The AI extracts:
+
+* 📝 Task
+* 📅 Deadline
+* 🔥 Priority
+* 📂 Category
+* 💡 AI Suggestion
+
+Example input:
+
+> I have a DBMS assignment tomorrow at 8 PM. It's important and I have to finish it.
+
+The application converts this into structured task information.
+
+Example:
+
+```text
+Task: DBMS assignment
+Deadline: Tomorrow at 8 PM
+Priority: High
+Category: Academics
+Suggestion: Start this task early because it is important.
+```
+
+---
+
+## 🛟 2. Smart Local Fallback
+
+A local fallback system was added so that the application can continue working when Gemini AI is unavailable.
+
+The fallback detects:
+
+* Deadlines such as today, tomorrow and next week
+* Times such as 8 PM
+* Priority words such as important and urgent
+* Academic keywords such as DBMS, assignment, Java and Python
+* Work and health-related keywords
+
+This makes the application more reliable instead of completely depending on an external AI service.
+
+---
+
+## 🗄️ 3. SQLite Database
+
+SQLite was integrated to store generated tasks.
+
+Each task stores:
+
+```text
+Voice Note
+Task
+Deadline
+Priority
+Category
+AI Suggestion
+Created At
+```
+
+The application also provides a `/tasks` endpoint to retrieve previously saved tasks.
+
+The frontend displays these tasks under:
+
+### 📋 Recent Tasks
+
+---
+
+## 🌐 4. Flask Backend
+
+The Flask backend handles communication between the frontend, AI service and database.
+
+Main routes include:
+
+```text
+/
+```
+
+Loads the main application.
+
+```text
+/analyze-text
+```
+
+Receives the voice-note text and analyzes it.
+
+```text
+/tasks
+```
+
+Retrieves saved tasks from the database.
+
+---
+
+## 🐙 5. GitHub Integration
+
+The project was uploaded to GitHub for version control and project sharing.
+
+Repository:
+
+**AI-Voice-Note-App**
+
+Git is used to:
+
+* Track project changes
+* Create commits
+* Push updates
+* Maintain project history
+* Share the project for hackathons and portfolio purposes
+
+Example workflow:
+
+```powershell
+git add .
+git commit -m "Update AI task management features"
+git push origin main
+```
+
+---
+
+## ☁️ 6. Vercel Deployment
+
+The Flask application was connected to Vercel for deployment.
+
+The project was configured to work in a serverless environment.
+
+The deployed application is available at:
+
+**https://ai-voice-note-app01.vercel.app**
+
+The deployment allows the project to be accessed through a public web URL instead of only running on the local computer.
+
+---
+
+## 🔐 7. Environment Variables
+
+The Gemini API key is stored using an environment variable instead of putting the secret directly inside the source code.
+
+Example:
+
+```text
+GEMINI_API_KEY=your_api_key
+```
+
+The `.env` file is excluded from GitHub using `.gitignore`.
+
+This prevents sensitive API credentials from being uploaded to the public repository.
+
+---
+
+## 🛠️ 8. Technologies Used
+
+| Technology    | Purpose                              |
+| ------------- | ------------------------------------ |
+| HTML          | Application structure                |
+| CSS           | User interface                       |
+| JavaScript    | Voice recognition and frontend logic |
+| Python        | Backend programming                  |
+| Flask         | Web framework                        |
+| Google Gemini | AI task analysis                     |
+| SQLite        | Task storage                         |
+| Git           | Version control                      |
+| GitHub        | Code hosting                         |
+| Vercel        | Deployment                           |
+
+---
+
+## 🎯 9. Current Features
+
+The application currently supports:
+
+* 🎙️ Voice-based task input
+* 📝 Speech-to-text conversion
+* 🤖 Gemini AI task analysis
+* 🛟 Smart local fallback
+* 📅 Deadline extraction
+* 🔥 Priority detection
+* 📂 Automatic task categorization
+* 💡 AI-generated suggestions
+* 🗄️ SQLite task storage
+* 📋 Recent task history
+* 🐙 GitHub version control
+* ☁️ Vercel deployment
+
+---
+
+## 🚀 10. Project Vision
+
+The long-term goal is to transform the application into a complete **AI-powered personal productivity assistant**.
+
+Future improvements can include:
+
+* 🔔 Task reminders
+* ⏰ Automatic notifications
+* 📊 Productivity dashboard
+* 📅 Calendar integration
+* ✅ Task completion tracking
+* 🎯 Daily task planning
+* 🧠 More advanced AI prioritization
+* 💾 Persistent cloud database
+* 📱 Mobile-friendly experience
+
+---
+
+## 👩‍💻 Developer
+
+**Shagun Yadav**
+
+Built as an AI-powered productivity project for learning, hackathons, portfolio development and practical application of AI, Python and web technologies.
+
