@@ -2,65 +2,164 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>AI Voice Note</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
 </head>
+
 
 <body>
 
-    <div class="app">
+    <!-- ============================= -->
+    <!-- HEADER -->
+    <!-- ============================= -->
 
-        <header>
-            <h1>AI Voice Note</h1>
-            <p>Your intelligent voice-powered task assistant</p>
-        </header>
+    <header class="header">
 
-        <main>
+        <div class="header-content">
 
-            <section class="welcome-card">
-                <h2>What do you need to do today?</h2>
-                <p>Record your thoughts and let AI organize them into clear tasks.</p>
+            <h1>🎙️ AI Voice Note</h1>
 
-                <button id="recordBtn">
-                    🎙️ Start Recording
-                </button>
+            <p>
+                Your intelligent voice-powered task assistant
+            </p>
 
-                <p id="recordingStatus">Ready to record</p>
-            </section>
+        </div>
 
-            <section class="dashboard">
+    </header>
 
-                <div class="card">
-                    <h3>🔥 DO NOW</h3>
-                    <p>No tasks yet</p>
-                </div>
 
-                <div class="card">
-                    <h3>⏰ UPCOMING</h3>
-                    <p>No upcoming tasks</p>
-                </div>
+    <!-- ============================= -->
+    <!-- MAIN -->
+    <!-- ============================= -->
 
-                <div class="card">
-                    <h3>💡 AI SUGGESTION</h3>
-                    <p>Your AI suggestions will appear here.</p>
-                </div>
+    <main class="container">
 
-                <div class="card">
-                    <h3>⚠️ DON'T FORGET</h3>
-                    <p>Your important reminders will appear here.</p>
-                </div>
 
-            </section>
+        <!-- HERO SECTION -->
 
-        </main>
+        <section class="hero">
 
-    </div>
+            <h2>
+                What do you need to do today?
+            </h2>
+
+            <p>
+                Speak naturally and let AI organize your thoughts
+                into clear and actionable tasks.
+            </p>
+
+
+            <!-- RECORD BUTTON -->
+
+            <button id="recordBtn" class="record-btn">
+
+                🎙️ Start Speaking
+
+            </button>
+
+
+            <!-- RECORDING STATUS -->
+
+            <div id="recordingStatus" class="recording-status">
+                Click the button and start speaking.
+            </div>
+
+
+        </section>
+
+
+        <!-- ============================= -->
+        <!-- AI TASK RESULT -->
+        <!-- ============================= -->
+
+        <section class="result-section">
+
+            <div class="result-card">
+
+                <h3>🔥 DO NOW</h3>
+
+                <p>
+                    Tasks that need your immediate attention.
+                </p>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <h3>📅 UPCOMING</h3>
+
+                <p>
+                    Tasks with future deadlines.
+                </p>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <h3>🤖 AI SUGGESTION</h3>
+
+                <p>
+                    Smart suggestions based on your tasks.
+                </p>
+
+            </div>
+
+
+            <div class="result-card">
+
+                <h3>🔔 DON'T FORGET</h3>
+
+                <p>
+                    Important things you should remember.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ============================= -->
+        <!-- RECENT TASKS -->
+        <!-- ============================= -->
+
+        <section class="task-history">
+
+            <h2>📋 Recent Tasks</h2>
+
+            <p class="history-subtitle">
+                Your saved AI-generated tasks
+            </p>
+
+
+            <div id="taskHistory">
+
+                <p>
+                    Loading your tasks...
+                </p>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+    <!-- ============================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ============================= -->
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
 
 </body>
 

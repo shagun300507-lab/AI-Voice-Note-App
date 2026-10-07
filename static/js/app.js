@@ -1,168 +1,483 @@
-console.log("NEW APP.JS LOADED");
-let recognition;
-let isListening = false;
-let fullTranscript = "";
+// =========================================================
+// AI VOICE NOTE APP
+// =========================================================
+
+
+// =========================================================
+// ELEMENTS
+// =========================================================
 
 const recordBtn = document.getElementById("recordBtn");
-const recordingStatus = document.getElementById("recordingStatus");
+
+const recordingStatus =
+    document.getElementById("recordingStatus");
+
+
+// =========================================================
+// SPEECH RECOGNITION
+// =========================================================
 
 const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
 
+
+// Check browser support
 
 if (!SpeechRecognition) {
 
     recordingStatus.textContent =
-        "❌ Speech recognition is not supported in this browser.";
+        "Speech recognition is not supported in this browser.";
 
     recordBtn.disabled = true;
 
 } else {
 
-    recognition = new SpeechRecognition();
+
+    // Create recognition object
+
+    const recognition =
+        new SpeechRecognition();
+
+
+    // Continuous speech
 
     recognition.continuous = true;
+
+
+    // Show temporary speech results
+
     recognition.interimResults = true;
+
+
+    // Indian English
+
     recognition.lang = "en-IN";
 
 
-    recognition.onstart = function () {
+    // =====================================================
+    // VARIABLES
+    // =====================================================
 
-        isListening = true;
-        fullTranscript = "";
+    let finalTranscript = "";
 
-        recordBtn.textContent = "⏹️ Stop Speaking";
-
-        recordingStatus.textContent =
-            "🔴 Listening... Speak now.";
-
-        showTranscript("");
-    };
+    let isRecording = false;
 
 
-    recognition.onresult = function (event) {
+    // =====================================================
+    // START RECORDING
+    // =====================================================
 
-        let text = "";
+    recordBtn.addEventListener("click", () => {
 
-        for (let i = 0; i < event.results.length; i++) {
+        if (!isRecording) {
 
-            text += event.results[i][0].transcript + " ";
+            finalTranscript = "";
+
+            recognition.start();
+
+            isRecording = true;
+
+            recordBtn.textContent =
+                "🛑 Stop Speaking";
+
+            recordingStatus.textContent =
+                "🎙️ Listening... Speak naturally.";
+
+            recordBtn.classList.add("recording");
+
+        } else {
+
+            recognition.stop();
+
+            isRecording = false;
+
+            recordBtn.textContent =
+                "🎙️ Start Speaking";
+
+            recordingStatus.textContent =
+                "⏳ Processing your voice note...";
+
+            recordBtn.classList.remove("recording");
         }
 
-        fullTranscript = text.trim();
+    });
 
-        console.log("Recognized text:", fullTranscript);
 
-        showTranscript(fullTranscript);
+    // =====================================================
+    // SPEECH RESULT
+    // =====================================================
+
+    recognition.onresult = (event) => {
+
+        let interimTranscript = "";
+
+
+        for (
+            let i = event.resultIndex;
+            i < event.results.length;
+            i++
+        ) {
+
+            const transcript =
+                event.results[i][0].transcript;
+
+
+            if (event.results[i].isFinal) {
+
+                finalTranscript +=
+                    transcript + " ";
+
+            } else {
+
+                interimTranscript +=
+                    transcript;
+            }
+        }
+
+
+        // Show live transcription
+
+        recordingStatus.innerHTML = `
+            <strong>🎙️ Listening...</strong>
+            <br>
+            ${escapeHTML(
+            finalTranscript + interimTranscript
+        )}
+        `;
     };
 
 
-    recognition.onerror = function (event) {
+    // =====================================================
+    // SPEECH ENDED
+    // =====================================================
+
+    recognition.onend = () => {
+
+        isRecording = false;
+
+        recordBtn.textContent =
+            "🎙️ Start Speaking";
+
+        recordBtn.classList.remove("recording");
+
+
+        const text =
+            finalTranscript.trim();
+
+
+        if (!text) {
+
+            recordingStatus.textContent =
+                "❌ No voice note was detected.";
+
+            return;
+        }
+
+
+        // Show transcription
+
+        recordingStatus.innerHTML = `
+            <strong>📝 Your Voice Note</strong>
+            <br><br>
+            ${escapeHTML(text)}
+        `;
+
+
+        // Send text to Flask
+
+        sendTextToFlask(text);
+
+    };
+
+
+    // =====================================================
+    // SPEECH ERROR
+    // =====================================================
+
+    recognition.onerror = (event) => {
 
         console.error(
             "Speech recognition error:",
             event.error
         );
 
-        recordingStatus.textContent =
-            "❌ Speech recognition error: " + event.error;
-    };
 
-    recognition.onend = function () {
+        isRecording = false;
 
-        console.log("Recognition ended.");
-        console.log("Final transcript:", fullTranscript);
+        recordBtn.textContent =
+            "🎙️ Start Speaking";
 
-        if (isListening) {
+        recordBtn.classList.remove("recording");
 
-            try {
-                recognition.start();
-            } catch (error) {
-                console.log("Recognition restart:", error);
-            }
+
+        if (event.error === "not-allowed") {
+
+            recordingStatus.textContent =
+                "❌ Microphone permission was denied.";
 
         } else {
 
-            recordBtn.textContent = "🎙️ Start Speaking";
-
-            if (fullTranscript.trim() === "") {
-
-                recordingStatus.textContent =
-                    "⚠️ No voice note was detected.";
-
-            } else {
-
-                recordingStatus.textContent =
-                    "⏳ Sending voice note to AI assistant...";
-
-                sendTextToFlask();
-            }
+            recordingStatus.textContent =
+                "❌ Speech recognition error. Please try again.";
         }
+
     };
 
-
-    recordBtn.addEventListener("click", function () {
-
-        if (!isListening) {
-
-            try {
-                recognition.start();
-
-            } catch (error) {
-
-                console.error(error);
-            }
-
-        } else {
-
-            isListening = false;
-
-            recognition.stop();
-        }
-    });
 }
 
 
-function showTranscript(text) {
+// =========================================================
+// SEND TEXT TO FLASK
+// =========================================================
 
-    let transcription =
-        document.getElementById("transcription");
+async function sendTextToFlask(text) {
+
+    try {
+
+        recordingStatus.innerHTML = `
+            <strong>🤖 Analyzing your task...</strong>
+            <br><br>
+            ${escapeHTML(text)}
+        `;
 
 
-    if (!transcription) {
+        const response =
+            await fetch("/analyze-text", {
 
-        transcription =
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    text: text
+                })
+            });
+
+
+        const result =
+            await response.json();
+
+
+        console.log(
+            "Server response:",
+            result
+        );
+
+
+        // =================================================
+        // SUCCESS
+        // =================================================
+
+        if (result.success) {
+
+            recordingStatus.innerHTML = `
+                <strong>✅ Task processed successfully!</strong>
+                <br><br>
+                ${escapeHTML(text)}
+            `;
+
+
+            // Display AI result
+
+            showAIResult(
+                result.ai_result
+            );
+
+
+            // Reload task history
+
+            loadTasks();
+
+
+        } else {
+
+            recordingStatus.innerHTML = `
+                <strong>❌ Task processing failed.</strong>
+                <br><br>
+                ${escapeHTML(
+                result.message ||
+                "Something went wrong."
+            )}
+            `;
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Request error:",
+            error
+        );
+
+
+        recordingStatus.innerHTML = `
+            <strong>❌ Connection error.</strong>
+            <br><br>
+            Make sure Flask is running.
+        `;
+    }
+
+}
+
+
+// =========================================================
+// SHOW AI RESULT
+// =========================================================
+
+function showAIResult(aiResult) {
+
+
+    let aiBox =
+        document.getElementById("aiResult");
+
+
+    // Create result box if it doesn't exist
+
+    if (!aiBox) {
+
+        aiBox =
             document.createElement("div");
 
-        transcription.id = "transcription";
+        aiBox.id = "aiResult";
 
-        transcription.style.marginTop = "25px";
-        transcription.style.padding = "20px";
-        transcription.style.background = "#f8fafc";
-        transcription.style.borderRadius = "12px";
-        transcription.style.textAlign = "left";
-        transcription.style.lineHeight = "1.6";
-        transcription.style.fontSize = "17px";
+        aiBox.className =
+            "ai-result-box";
+
 
         recordingStatus.parentNode.appendChild(
-            transcription
+            aiBox
         );
     }
 
 
-    transcription.innerHTML = `
-        <strong>📝 Your Voice Note</strong>
-        <p>${text || "Start speaking..."}</p>
+    // Determine source
+
+    const source =
+        aiResult.source ||
+        "AI";
+
+
+    let sourceLabel;
+
+
+    if (source === "Smart Fallback") {
+
+        sourceLabel =
+            "🛟 Smart Fallback";
+
+    } else {
+
+        sourceLabel =
+            "✨ Gemini AI";
+    }
+
+
+    // =====================================================
+    // DISPLAY RESULT
+    // =====================================================
+
+    aiBox.innerHTML = `
+
+        <h3>
+            🤖 AI Task Analysis
+        </h3>
+
+        <p class="ai-source">
+            ${sourceLabel}
+        </p>
+
+        <div class="ai-result-content">
+
+            <p>
+
+                <strong>
+                    📝 Task:
+                </strong>
+
+                ${escapeHTML(
+        aiResult.task ||
+        "Not specified"
+    )}
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    📅 Deadline:
+                </strong>
+
+                ${escapeHTML(
+        aiResult.deadline ||
+        "Not specified"
+    )}
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    🔥 Priority:
+                </strong>
+
+                ${escapeHTML(
+        aiResult.priority ||
+        "Medium"
+    )}
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    📂 Category:
+                </strong>
+
+                ${escapeHTML(
+        aiResult.category ||
+        "General"
+    )}
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    💡 Suggestion:
+                </strong>
+
+                ${escapeHTML(
+        aiResult.suggestion ||
+        "No suggestion"
+    )}
+
+            </p>
+
+        </div>
     `;
 }
 
 
-async function sendTextToFlask() {
+// =========================================================
+// LOAD SAVED TASKS
+// =========================================================
 
-    if (!fullTranscript) {
+async function loadTasks() {
 
-        recordingStatus.textContent =
-            "⚠️ No voice note was detected.";
+    const taskHistory =
+        document.getElementById(
+            "taskHistory"
+        );
+
+
+    if (!taskHistory) {
 
         return;
     }
@@ -170,68 +485,149 @@ async function sendTextToFlask() {
 
     try {
 
-        const response = await fetch("/analyze-text", {
-
-            method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                text: fullTranscript
-            })
-        });
+        const response =
+            await fetch("/tasks");
 
 
-        const result = await response.json();
-        if (response.ok) {
-            console.log("Flask response:", result);
+        const tasks =
+            await response.json();
 
-            recordingStatus.textContent =
-                "✅ AI analyzed your voice note!";
 
-            showAIResult(result.ai_result);
-        } else {
-            recordingStatus.textContent =
-                "❌ " + result.message;
+        // No tasks
+
+        if (!tasks.length) {
+
+            taskHistory.innerHTML = `
+                <div class="empty-state">
+                    <p>
+                        No tasks yet.
+                        Start speaking to create one.
+                    </p>
+                </div>
+            `;
+
+            return;
         }
+
+
+        // =================================================
+        // CREATE TASK CARDS
+        // =================================================
+
+        taskHistory.innerHTML =
+            tasks.map(task => `
+
+                <div class="saved-task">
+
+                    <h3>
+                        ${escapeHTML(
+                task.task ||
+                "Untitled Task"
+            )}
+                    </h3>
+
+
+                    <div class="task-details">
+
+                        <span>
+                            📅
+                            ${escapeHTML(
+                task.deadline ||
+                "No deadline"
+            )}
+                        </span>
+
+
+                        <span>
+                            🔥
+                            ${escapeHTML(
+                task.priority ||
+                "Medium"
+            )}
+                        </span>
+
+
+                        <span>
+                            📂
+                            ${escapeHTML(
+                task.category ||
+                "General"
+            )}
+                        </span>
+
+                    </div>
+
+
+                    <p>
+
+                        💡
+                        ${escapeHTML(
+                task.suggestion ||
+                "No suggestion"
+            )}
+
+                    </p>
+
+
+                    <small>
+
+                        Created:
+                        ${escapeHTML(
+                task.created_at ||
+                ""
+            )}
+
+                    </small>
+
+                </div>
+
+            `).join("");
 
 
     } catch (error) {
 
         console.error(
-            "Connection error:",
+            "Could not load tasks:",
             error
         );
 
-        recordingStatus.textContent =
-            "❌ Could not connect to Flask.";
-    }
-}
-function showAIResult(aiResult) {
 
-    let aiBox = document.getElementById("aiResult");
-
-    if (!aiBox) {
-
-        aiBox = document.createElement("div");
-
-        aiBox.id = "aiResult";
-
-        aiBox.style.marginTop = "25px";
-        aiBox.style.padding = "20px";
-        aiBox.style.background = "#eef2ff";
-        aiBox.style.borderRadius = "12px";
-        aiBox.style.textAlign = "left";
-        aiBox.style.lineHeight = "1.7";
-        aiBox.style.fontSize = "16px";
-
-        recordingStatus.parentNode.appendChild(aiBox);
+        taskHistory.innerHTML = `
+            <p>
+                Unable to load saved tasks.
+            </p>
+        `;
     }
 
-    aiBox.innerHTML = `
-        <h3>🤖 AI Task Analysis</h3>
-        <p>${aiResult.replace(/\n/g, "<br>")}</p>
-    `;
 }
+
+
+// =========================================================
+// ESCAPE HTML
+// =========================================================
+
+function escapeHTML(value) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        String(value ?? "");
+
+
+    return div.innerHTML;
+}
+
+
+// =========================================================
+// LOAD TASKS WHEN PAGE OPENS
+// =========================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        loadTasks();
+
+    }
+);

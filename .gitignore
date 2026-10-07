@@ -1,6 +1,8 @@
 # Virtual environment
 venv/
-.env/
+
+# Environment variables / API keys
+.env
 
 # Python cache
 __pycache__/
@@ -9,16 +11,15 @@ __pycache__/
 # Flask
 instance/
 
-# IDE
+# VS Code
 .vscode/
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# Audio files
+# Generated audio files
 static/audio/
 
-.env
-__pycache__/
-*.pyc
+# Local SQLite database
+database/tasks.db
