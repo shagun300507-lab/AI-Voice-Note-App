@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Voice Note</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <header>
+            <h1>AI Voice Note</h1>
+            <p>Your intelligent voice-powered task assistant</p>
+        </header>
+
+        <main>
+
+            <section class="welcome-card">
+                <h2>What do you need to do today?</h2>
+                <p>Record your thoughts and let AI organize them into clear tasks.</p>
+
+                <button id="recordBtn">
+                    🎙️ Start Recording
+                </button>
+
+                <p id="recordingStatus">Ready to record</p>
+            </section>
+
+            <section class="dashboard">
+
+                <div class="card">
+                    <h3>🔥 DO NOW</h3>
+                    <p>No tasks yet</p>
+                </div>
+
+                <div class="card">
+                    <h3>⏰ UPCOMING</h3>
+                    <p>No upcoming tasks</p>
+                </div>
+
+                <div class="card">
+                    <h3>💡 AI SUGGESTION</h3>
+                    <p>Your AI suggestions will appear here.</p>
+                </div>
+
+                <div class="card">
+                    <h3>⚠️ DON'T FORGET</h3>
+                    <p>Your important reminders will appear here.</p>
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+
+</html>
